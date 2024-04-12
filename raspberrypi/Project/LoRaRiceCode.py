@@ -10,6 +10,7 @@ import re
 import requests
 import socket
 import json
+import os
 ##########################################################
 import bme280
 import smbus2 
@@ -42,8 +43,7 @@ GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 lcd = CharLCD(i2c_expander='PCF8574', address=0x27, port=1, cols=16, rows=4, dotsize=10)
 lcd.clear()
 lcd.write_string('>>GateWay  Box<<')
-lcd.cursor_pos =(2,0)
-lcd.write_string('  Connect WiFi  ')
+
 ##########################################################
 import BlynkLib
 from BlynkTimer import BlynkTimer
@@ -79,9 +79,17 @@ def button_released_callback(channel):
 	lora.countSleep = 0
 	if lora.countLcd >= 5:
 		lora.countLcd = 1
-	if lora.countLcd == 1:
 		lcd.clear()
-		llcd.write_string('>>GateWay  Box<<')
+	if lora.countLcd == 1:
+		lora.check_WifiConnect()
+		lcd.clear()
+		lcd.write_string('>>GateWay  Box<<')
+		if lora.wifiConnect == 1:
+			lcd.cursor_pos =(2,0)
+			lcd.write_string('  Connect WiFi  ')
+		else:
+			lcd.cursor_pos =(2,0)
+			lcd.write_string('Not Connect WiFi')	
 	elif lora.countLcd == 2:
 		if lora.checkstatusNode1 == 1:
 			lcd.clear()
@@ -332,6 +340,7 @@ class LoRaGateway(LoRa):
 		self.blynkTimeNormalNode1 = 0
 		self.blynkTimeDebugNode1 = 0
 		
+		self.previousWaterLevelNode1 = 0.0
 		#//////////////////////Node 2/////////////////////////
 		self.destination_Node2 = hex(0xb1)
 		self.confirmNode2 = "Pass"
@@ -349,6 +358,7 @@ class LoRaGateway(LoRa):
 		self.blynkTimeNormalNode2 = 0
 		self.blynkTimeDebugNode2 = 0
 		
+		self.previousWaterLevelNode2 = 0
 		#//////////////////////Node 3/////////////////////////
 		self.destination_Node3 = hex(0xc1)
 		self.confirmNode3 = "Pass"
@@ -407,7 +417,12 @@ class LoRaGateway(LoRa):
 		self._backUp_blynkUsageStateN1 = 0
 		self._backUp_blynkUsageStateN2 = 0
 		self._backUp_blynkUsageStateN3 = 0
-		
+	
+	def set_tx_power(self, tx_power):
+		self.set_mode(MODE.TX)
+		self.set_pa_config(pa_select=1)
+		self.set_pa_config(output_power=tx_power)
+		self.set_mode(MODE.STDBY)
 	#//////////////////////// value blynk Node 1///////////////////////////
 	def setBlynkModeNode1(self, value):
 		self.blynkModeNode1 = value
@@ -500,15 +515,30 @@ class LoRaGateway(LoRa):
 					sleep(1)
 					self.stateRx = True
 					current_time = datetime.datetime.now()
-					current_data = "Time"+str(current_time)
+					current_date = current_time.date()  # เก็บเฉพาะวันที่
+					current_data = "Time" + str(current_time)
 					payload_as_str = [str(item) for item in payload]
-					with open('logfile_Receive_LoRaRice.txt', 'a') as file:
+
+					# สร้างชื่อไฟล์ใหม่โดยมีการลงท้ายด้วยวันที่ปัจจุบัน
+					base_file_name = '/home/pi64346/Documents/Project/log/logfile_Receive_LoRaRice'
+					file_name = f"{base_file_name}_{current_date}.txt"
+
+					# ตรวจสอบว่าไฟล์ใหม่สร้างขึ้นในวันเดียวกันหรือไม่
+					if not os.path.exists(file_name):
+						# สร้างไฟล์ใหม่
+						with open(file_name, 'a') as file:
+							file.write("เริ่มต้นสร้างไฟล์ใหม่...\n")
+
+					# เขียนข้อมูลลงในไฟล์
+					with open(file_name, 'a') as file:
 						file.write('\n')
 						file.write(current_data)
-						file.write('\nReceive as byte		: '+','.join(payload_as_str))
-						file.write('\nReceive as String	: '+self.received_data)
-						file.write('\nRSSI 				: '+str(self.get_pkt_rssi_value()))
-						file.write('\nSNR  				: '+str(self.get_pkt_snr_value()))
+						file.write('\nReceive as byte		: ' + ','.join(payload_as_str))
+						file.write('\nReceive as String	: ' + self.received_data)
+						file.write('\nRSSI 				: ' + str(self.get_pkt_rssi_value()))
+						file.write('\nSNR  				: ' + str(self.get_pkt_snr_value()))
+
+					print("---------------------------------save log----------------------------")
 				else:
 					print("falseeee")
 				
@@ -532,6 +562,12 @@ class LoRaGateway(LoRa):
 				rxModeNode1 = int(data_list[5])
 				rxTimeNormalNode1 = float(data_list[6])
 				rxTimeDebugNode1 = float(data_list[7])
+				if self.previousWaterLevelNode1 == 0:
+					self.previousWaterLevelNode1 = rxWaterLevelNode1
+					self.previousWaterLevelNode1 = (self.previousWaterLevelNode1*0.9)+(rxWaterLevelNode1*0.1)
+				else:
+					self.previousWaterLevelNode1 = (self.previousWaterLevelNode1*0.9)+(rxWaterLevelNode1*0.1)
+				print("previousWaterLevelNode1: "+ str(self.previousWaterLevelNode1))
 				self.confirmReceive = True
 			except:
 				self.confirmReceive = False
@@ -539,12 +575,16 @@ class LoRaGateway(LoRa):
 			print("blynkModeNode1 "+ str(self.blynkModeNode1))
 			print("blynkTimeNormalNode1 "+str(self.blynkTimeNormalNode1))
 			print("blynkTimeDebugNode1 "+str(self.blynkTimeDebugNode1))
+			print(">>>>>>>>>>>>>>>>>>>>>Gateway<<<<<<<<<<<<<<<<<<<<<<<< ")
+			print("GatewayModeNode1 "+ str(self.modeNode1))
+			print("GatewayTimeNormalNode1 "+str(self.TimeNormalNode1))
+			print("GatewayTimeDebugNode1 "+str(self.TimeDebugNode1))
 			#	print("ssss")
 			if self.confirmReceive == True:
 				if rxModeNode1 == self.modeNode1 and rxTimeNormalNode1 == self.TimeNormalNode1 and rxTimeDebugNode1 == self.TimeDebugNode1:
 					if self.blynkModeNode1 == self.modeNode1 and self.blynkTimeNormalNode1 == self.TimeNormalNode1 and self.blynkTimeDebugNode1 == self.TimeDebugNode1:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode1 = rxWaterLevelNode1
+						self.waterLevelNode1 = self.previousWaterLevelNode1
 						self.tempNode1 = rxTempNode1
 						self.humNode1 = rxHumNode1
 						self.battNode1 = rxBattNode1
@@ -573,7 +613,7 @@ class LoRaGateway(LoRa):
 						stateBlynkRx = False
 					else:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode1 = rxWaterLevelNode1
+						self.waterLevelNode1 = self.previousWaterLevelNode1
 						self.tempNode1 = rxTempNode1
 						self.humNode1 = rxHumNode1
 						self.battNode1 = rxBattNode1
@@ -603,7 +643,7 @@ class LoRaGateway(LoRa):
 				else:
 					if self.blynkModeNode1 == self.modeNode1 and self.blynkTimeNormalNode1 == self.TimeNormalNode1 and self.blynkTimeDebugNode1 == self.TimeDebugNode1:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 3 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode1 = rxWaterLevelNode1
+						self.waterLevelNode1 = self.previousWaterLevelNode1
 						self.tempNode1 = rxTempNode1
 						self.humNode1 = rxHumNode1
 						self.battNode1 = rxBattNode1
@@ -632,7 +672,7 @@ class LoRaGateway(LoRa):
 						stateBlynkRx = False
 					else:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 4 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode1 = rxWaterLevelNode1
+						self.waterLevelNode1 = self.previousWaterLevelNode1
 						self.tempNode1 = rxTempNode1
 						self.humNode1 = rxHumNode1
 						self.battNode1 = rxBattNode1
@@ -687,6 +727,12 @@ class LoRaGateway(LoRa):
 				rxModeNode2 = int(data_list[5])
 				rxTimeNormalNode2 = float(data_list[6])
 				rxTimeDebugNode2 = float(data_list[7])
+				if self.previousWaterLevelNode2 == 0:
+					self.previousWaterLevelNode2 = rxWaterLevelNode2
+					self.previousWaterLevelNode2 = (self.previousWaterLevelNode2*0.9)+(rxWaterLevelNode2*0.1)
+				else:
+					self.previousWaterLevelNode2 = (self.previousWaterLevelNode2*0.9)+(rxWaterLevelNode2*0.1)
+				
 				self.confirmReceive = True
 			except:
 				self.confirmReceive = False
@@ -699,7 +745,7 @@ class LoRaGateway(LoRa):
 				if rxModeNode2 == self.modeNode2 and rxTimeNormalNode2 == self.TimeNormalNode2 and rxTimeDebugNode2 == self.TimeDebugNode2:
 					if self.blynkModeNode2 == self.modeNode2 and self.blynkTimeNormalNode2 == self.TimeNormalNode2 and self.blynkTimeDebugNode2 == self.TimeDebugNode2:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode2 = rxWaterLevelNode2
+						self.waterLevelNode2 = self.previousWaterLevelNode2
 						self.tempNode2 = rxTempNode2
 						self.humNode2 = rxHumNode2
 						self.battNode2 = rxBattNode2
@@ -728,7 +774,7 @@ class LoRaGateway(LoRa):
 						stateBlynkRx = False
 					else:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode2 = rxWaterLevelNode2
+						self.waterLevelNode2 = self.previousWaterLevelNode2
 						self.tempNode2 = rxTempNode2
 						self.humNode2 = rxHumNode2
 						self.battNode2 = rxBattNode2
@@ -759,7 +805,7 @@ class LoRaGateway(LoRa):
 				else:
 					if self.blynkModeNode2 == self.modeNode2 and self.blynkTimeNormalNode2 == self.TimeNormalNode2 and self.blynkTimeDebugNode2 == self.TimeDebugNode2:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 3 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode2 = rxWaterLevelNode2
+						self.waterLevelNode2 = self.previousWaterLevelNode2
 						self.tempNode2 = rxTempNode2
 						self.humNode2 = rxHumNode2
 						self.battNode2 = rxBattNode2
@@ -789,7 +835,7 @@ class LoRaGateway(LoRa):
 						stateBlynkRx = False
 					else:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Case 4 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-						self.waterLevelNode2 = rxWaterLevelNode2
+						self.waterLevelNode2 = self.previousWaterLevelNode2
 						self.tempNode2 = rxTempNode2
 						self.humNode2 = rxHumNode2
 						self.battNode2 = rxBattNode2
@@ -999,6 +1045,7 @@ class LoRaGateway(LoRa):
 			self.checkDataNode = 0
 			state = "ONE"
 	def send_data(self, node):
+		lora.set_tx_power(12)
 		if node == 1:
 			sleep(2)
 			self.checkstatusNode1 = 1
@@ -1251,13 +1298,13 @@ class LoRaGateway(LoRa):
 					print(">>>>>>>>>>>>>>>>>>>>               TimeDebugNode1                <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 					print(">>>>>>>>>>>>>>>>>>>>                   PASS                      <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 					print(">>>>>>>>>>>>>>>>>>>>checkstatusNode1"+str(self.checkstatusNode1)+" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-				# อัปเดตค่า previousMillisSw เมื่อทำงานเสร็จสิ้น
+				# อัปเดตค่า previousMillisSw เมื่อทำงานเสร็จ
 				self.previousMillisNode1 = currentMillisNode1
 		##################################################### Node2 ################################################################################
 		if self.modeNode2 == 1:
 			currentMillisNode2 = int(round(time.time() * 1000))  # ดึงเวลาปัจจุบันในทุกครั้งในลูป
 			if currentMillisNode2 - self.previousMillisNode2 >= self.TimeNormalNode2*60*1000 * 2:     #self.TimeNormalNode2*60*
-				if(self.checkstatusNode2 == 0):  #update ค่า ขึ้นblynk
+				if(self.checkstatusNode2 == 0):  
 					self.checkstatusNode2 = 0
 					self.stateNode2 = self.checkstatusNode2
 					if self.wifiConnect == 1:
@@ -1643,7 +1690,7 @@ class LoRaGateway(LoRa):
 				blynk.virtual_write(41,self.blynkUsageStateN2)
 				blynk.virtual_write(42,self.blynkUsageStateN3)
 			except BrokenPipeError:
-								print("pass")
+				print("pass")
 		else:
 			#node1
 			self.blynkModeNode1 = self._backUp_blynkModeNode1 
@@ -1752,13 +1799,20 @@ class LoRaGateway(LoRa):
 
 		
 	def start(self):
+		lcd.clear()
+		lcd.write_string('>>GateWay  Box<<')
 		self.check_WifiConnect()
 		if self.wifiConnect == 1:
+			lcd.cursor_pos =(2,0)
+			lcd.write_string('  Connect WiFi  ')
 			try:
 				blynk.virtual_write(31,1)
 				blynk.sync_virtual(6,7,8,16,17,18,23,24,25,28,29,38,39,40,41,42,43,44)
 			except BrokenPipeError:
 				print("pass")
+		else:
+			lcd.cursor_pos =(2,0)
+			lcd.write_string('Not Connect WiFi')
 		self.reset_ptr_rx()
 		self.set_mode(MODE.RXCONT)
 		state = "ONE"  # กำหนด initial state เป็น "WAITING"
@@ -1777,8 +1831,15 @@ class LoRaGateway(LoRa):
 						self.countSleep = self.countSleep+1
 					if self.countSleep >=5:
 						self.countLcd = 1
-						lcd.clear()    
-						lcd.write_string('  >>> HOME <<<')
+						self.check_WifiConnect()
+						lcd.clear()
+						lcd.write_string('>>GateWay  Box<<')
+						if self.wifiConnect == 1:
+							lcd.cursor_pos =(2,0)
+							lcd.write_string('  Connect WiFi  ')
+						else:
+							lcd.cursor_pos =(2,0)
+							lcd.write_string('Not Connect WiFi')
 						self.countSleep = 0
 					if count_update_blynkGateway >= 30 and self.wifiConnect == 1:
 						print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> gateway update <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
@@ -1791,27 +1852,37 @@ class LoRaGateway(LoRa):
 						count_update_blynkGateway = 0
 					if self.wifiConnect != self.previousWifiConnect:
 						if self.wifiConnect == 1:
+							lcd.clear()
+							lcd.write_string('>>GateWay  Box<<')
+							lcd.cursor_pos =(2,0)
+							lcd.write_string('  Connect WiFi  ')
 							print("-------------------------------------wifiConnect-------------------------------------")
 							print("-------------------------------------VVVVVVVVVVV-------------------------------------")
 							blynk.sync_virtual(6,7,8,16,17,18,23,24,25,28,29,38,39,40,41,42,43,44)
 							blynk.run()
 							blynk.connect()
-							self.backUpData()
+							#self.backUpData()
+							#self.reset_value()
 							self.read_and_update_variables_backUp("backUpData.json")
-							self.reset_value()
+							self.clone_backup_to_blynk(1)
+							#update backUp to blynk
 							state = "ONE"
 							
-							#self.clone_backup_to_blynk(1)
-							#update backUp to blynk
+							
 						elif self.wifiConnect == 0:
+							lcd.clear()
+							lcd.write_string('>>GateWay  Box<<')
+							lcd.cursor_pos =(2,0)
+							lcd.write_string('Not Connect WiFi')
 							print("-------------------------------------wifi not Connect-------------------------------------")
 							print("-------------------------------------VVVVVVVVVVV-------------------------------------")
 							# เรียกใช้งานฟังก์ชันเพื่ออ่านข้อมูล JSON และแสดงผล
 							blynk.disconnect()
 							self.backUpData()
 							self.read_and_update_variables_backUp("backUpData.json")
+							self.clone_backup_to_blynk(0)
 							state = "ONE"
-							#self.clone_backup_to_blynk(0)
+							
 							#update  blynk to backUp
 						self.previousWifiConnect = self.wifiConnect
 					if count_checkStatusPump >= 2 and self.wifiConnect == 1:
