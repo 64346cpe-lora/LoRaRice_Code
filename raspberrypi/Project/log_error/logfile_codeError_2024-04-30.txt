@@ -1,0 +1,117 @@
+เริ่มต้นสร้างไฟล์ใหม่...
+
+Time2024-04-30 03:10:25.419509 error : timed out
+
+Time2024-04-30 03:42:09.677312 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 03:42:25.569517 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:42:33.567037 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:42:44.282238 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:42:52.443570 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:43:10.536717 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:43:20.839385 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:43:31.167073 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 03:44:25.416170 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:21:32.232675 error : _ssl.c:1106: The handshake operation timed out
+
+Time2024-04-30 09:25:59.866348 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 09:26:10.853647 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:26:18.863861 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:47:58.181875 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 09:48:23.471848 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:48:59.086327 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:49:04.436618 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:49:14.793199 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:49:30.163488 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:50:23.670751 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 09:58:44.187553 error : timed out
+
+Time2024-04-30 09:58:57.101546 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:59:09.919651 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:59:37.352148 error : [SSL: BAD_LENGTH] bad length (_ssl.c:2472)
+
+Time2024-04-30 09:59:42.622570 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 09:59:52.088890 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 10:00:00.055397 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 10:00:30.253650 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:26:49.974265 error : timed out
+
+Time2024-04-30 19:27:02.278026 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:27:45.353670 error : [SSL: BAD_LENGTH] bad length (_ssl.c:2472)
+
+Time2024-04-30 19:27:54.688020 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:28:10.048006 error : [SSL: BAD_LENGTH] bad length (_ssl.c:2472)
+
+Time2024-04-30 19:28:22.707022 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:33:55.332004 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 19:34:05.246578 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:34:34.022422 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:34:50.739151 error : [SSL: BAD_LENGTH] bad length (_ssl.c:2472)
+
+Time2024-04-30 19:35:07.036756 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 19:35:15.070878 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 21:08:13.339935 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 21:08:26.488419 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 21:08:39.708645 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 21:09:16.974061 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 21:09:22.481291 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 21:09:39.447368 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 22:29:59.824608 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 22:42:04.055296 error : _ssl.c:1106: The handshake operation timed out
+
+Time2024-04-30 22:51:56.107403 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 22:52:39.678196 error : timed out
+
+Time2024-04-30 22:52:51.509717 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 22:54:37.608481 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-04-30 22:54:51.465634 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 22:55:20.245419 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 22:55:37.318174 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 22:55:52.749536 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-30 22:56:39.409465 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)

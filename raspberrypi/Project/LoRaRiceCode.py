@@ -332,7 +332,7 @@ class LoRaGateway(LoRa):
 		self.battNode1 = 0
 		self.stateNode1 = 0
 		self.modeNode1 = 0    # 0 = DebugMode , 1 = NormalMode
-		self.TimeNormalNode1 = 2
+		self.TimeNormalNode1 = 6
 		self.TimeDebugNode1 = 1
 		
 		self.checkstatusNode1 = 0
@@ -350,7 +350,7 @@ class LoRaGateway(LoRa):
 		self.battNode2 = 0
 		self.stateNode2 = 0
 		self.modeNode2 = 0    # 0 = DebugMode , 1 = NormalMode
-		self.TimeNormalNode2 = 2
+		self.TimeNormalNode2 = 6
 		self.TimeDebugNode2 = 1
 		
 		self.checkstatusNode2 = 0
@@ -395,7 +395,8 @@ class LoRaGateway(LoRa):
 		self.tokenLine = ""
 		self.wifiConnect = 1
 		self.previousWifiConnect = 1
-		
+		self.rssiNode = 0
+		self.snrNode = 0
 		#//////////////////////////BackUp////////////////////////////
 		#node1
 		self._backUp_blynkModeNode1 = 0
@@ -513,12 +514,14 @@ class LoRaGateway(LoRa):
 						except BrokenPipeError:
 							print("pass")
 					sleep(1)
-					self.stateRx = True
+					self.stateRx = True   
+					self.rssiNode = self.get_pkt_rssi_value()
+					self.snrNode = self.get_pkt_snr_value()
 					current_time = datetime.datetime.now()
-					current_date = current_time.date()  # เก็บเฉพาะวันที่
+					current_date = current_time.date()  
 					current_data = "Time" + str(current_time)
 					payload_as_str = [str(item) for item in payload]
-
+					
 					# สร้างชื่อไฟล์ใหม่โดยมีการลงท้ายด้วยวันที่ปัจจุบัน
 					base_file_name = '/home/pi64346/Documents/Project/log/logfile_Receive_LoRaRice'
 					file_name = f"{base_file_name}_{current_date}.txt"
@@ -535,8 +538,8 @@ class LoRaGateway(LoRa):
 						file.write(current_data)
 						file.write('\nReceive as byte		: ' + ','.join(payload_as_str))
 						file.write('\nReceive as String	: ' + self.received_data)
-						file.write('\nRSSI 				: ' + str(self.get_pkt_rssi_value()))
-						file.write('\nSNR  				: ' + str(self.get_pkt_snr_value()))
+						file.write('\nRSSI 				: ' + str(self.rssiNode))
+						file.write('\nSNR  				: ' + str(self.snrNode))
 
 					print("---------------------------------save log----------------------------")
 				else:
@@ -648,9 +651,12 @@ class LoRaGateway(LoRa):
 						self.humNode1 = rxHumNode1
 						self.battNode1 = rxBattNode1
 						self.stateNode1 = rxStateNode1
-						self.modeNode1 = rxModeNode1
-						self.TimeNormalNode1 = rxTimeNormalNode1
-						self.TimeDebugNode1 = rxTimeDebugNode1 
+						self.modeNode1 = self.blynkModeNode1
+						self.TimeNormalNode1 = self.blynkTimeNormalNode1
+						self.TimeDebugNode1 = self.blynkTimeDebugNode1 
+						#self.modeNode1 = rxModeNode1
+						#self.TimeNormalNode1 = rxTimeNormalNode1
+						#self.TimeDebugNode1 = rxTimeDebugNode1 
 						print("send to blynk"+str(self.waterLevelNode1)+","+str(self.tempNode1)+","+str(self.humNode1)+","+str(self.battNode1)+","+str(self.stateNode1)+","+str(self.modeNode1)+","+str(self.TimeNormalNode1)+","+str(self.TimeDebugNode1))
 						if self.wifiConnect == 1:
 							try:
@@ -700,6 +706,12 @@ class LoRaGateway(LoRa):
 							self.blynkTimeNormalNode1 = self.TimeNormalNode1
 							self.blynkTimeDebugNode1 = self.TimeDebugNode1
 						stateBlynkRx = False
+				if self.wifiConnect == 1:
+					try:
+						blynk.virtual_write(45,self.rssiNode )
+						blynk.virtual_write(46,self.snrNode )
+					except BrokenPipeError:
+						print("pass")
 			else:
 				print("ConfirmReceive Error")
 			current_data = "Time"+str(current_time)+" Data "+self.received_data 
@@ -810,9 +822,12 @@ class LoRaGateway(LoRa):
 						self.humNode2 = rxHumNode2
 						self.battNode2 = rxBattNode2
 						self.stateNode2 = rxStateNode2
-						self.modeNode2 = rxModeNode2
-						self.TimeNormalNode2 = rxTimeNormalNode2
-						self.TimeDebugNode2 = rxTimeDebugNode2 
+						self.modeNode2 = self.blynkModeNode2
+						self.TimeNormalNode2 = self.blynkTimeNormalNode2
+						self.TimeDebugNode2 = self.blynkTimeDebugNode2 
+						#self.modeNode2 = rxModeNode2
+						#self.TimeNormalNode2 = rxTimeNormalNode2
+						#self.TimeDebugNode2 = rxTimeDebugNode2 
 						print("send to blynk"+str(self.waterLevelNode2)+","+str(self.tempNode2)+","+str(self.humNode2)+","+str(self.battNode2)+","+str(self.stateNode2)+","+str(self.modeNode2)+","+str(self.TimeNormalNode2)+","+str(self.TimeDebugNode2))
 						
 						if self.wifiConnect == 1:
@@ -863,6 +878,12 @@ class LoRaGateway(LoRa):
 							self.blynkTimeNormalNode2 = self.TimeNormalNode2
 							self.blynkTimeDebugNode2 = self.TimeDebugNode2
 						stateBlynkRx = False
+				if self.wifiConnect == 1:
+					try:
+						blynk.virtual_write(48,self.rssiNode )
+						blynk.virtual_write(49,self.snrNode )
+					except BrokenPipeError:
+						print("pass")
 			else:
 				print("ConfirmReceive Error")
 			current_data = "Time"+str(current_time)+" Data "+self.received_data 
@@ -1036,6 +1057,12 @@ class LoRaGateway(LoRa):
 							self.blynkTimeNormalNode3 = self.TimeNormalNode3
 							self.blynkTimeDebugNode3 = self.TimeDebugNode3
 						stateBlynkRx = False
+				if self.wifiConnect == 1:
+					try:
+						blynk.virtual_write(49,self.rssiNode )
+						blynk.virtual_write(50,self.snrNode )
+					except BrokenPipeError:
+						print("pass")
 			else:
 				print("ConfirmReceive Error")		
 			#current_data = "Time"+str(current_time)+" Data "+self.received_data 
@@ -1858,9 +1885,10 @@ class LoRaGateway(LoRa):
 							lcd.write_string('  Connect WiFi  ')
 							print("-------------------------------------wifiConnect-------------------------------------")
 							print("-------------------------------------VVVVVVVVVVV-------------------------------------")
-							blynk.sync_virtual(6,7,8,16,17,18,23,24,25,28,29,38,39,40,41,42,43,44)
 							blynk.run()
 							blynk.connect()
+							
+							blynk.sync_virtual(6,7,8,16,17,18,23,24,25,28,29,38,39,40,41,42,43,44)
 							#self.backUpData()
 							#self.reset_value()
 							self.read_and_update_variables_backUp("backUpData.json")
@@ -1936,6 +1964,35 @@ class LoRaGateway(LoRa):
 			except Exception as e:
 				sleep(5)
 				print("System Errer : ",e)
+				#blynk.disconnect()
+				#sleep(0.5)
+				#blynk.connect()
+				#blynk.run()
+				current_time = datetime.datetime.now()
+				current_date = current_time.date()  # เก็บเฉพาะวันที่
+				current_data = "Time" + str(current_time)
+
+				# สร้างชื่อไฟล์ใหม่โดยมีการลงท้ายด้วยวันที่ปัจจุบัน
+				base_file_name = '/home/pi64346/Documents/Project/log_error/logfile_codeError'
+				file_name = f"{base_file_name}_{current_date}.txt"
+
+				# ตรวจสอบว่าไฟล์ใหม่สร้างขึ้นในวันเดียวกันหรือไม่
+				if not os.path.exists(file_name):
+					# สร้างไฟล์ใหม่
+					with open(file_name, 'a') as file:
+						file.write("เริ่มต้นสร้างไฟล์ใหม่...\n")
+
+				# เขียนข้อมูลลงในไฟล์
+				with open(file_name, 'a') as file:
+					file.write('\n')
+					file.write(current_data)
+					file.write(' error : '+str(e)+"\n")
+					try:
+					    blynk.connect()
+					except:
+					    pass
+				print("---------------------------------save log Error----------------------------")
+				#os.system("sudo reboot")
 				continue
 
 # กำหนดค่าต่างๆ และเริ่มต้น LoRa

@@ -22,6 +22,7 @@ extern bool resendData = false;
 unsigned long previousMillis = 0;
 extern bool receiveModeData = false;
 extern String receiveData = "";
+extern int swPumpPressed ;
 
 bool isAlphaNumericOrComma(char c);
 bool hasNonAlphaNumericChars(String str);
@@ -109,6 +110,13 @@ void onReceive() {
         //     // break;
         // }
         }
+      if(swPumpPressed == 1){
+        swPumpPressed = 0;
+        sendSuccess = false;
+        resendData = true;
+        Serial.println("---------------------------------swPumpPressed-----------------------------------");
+        break;
+      }
     }
   
 }

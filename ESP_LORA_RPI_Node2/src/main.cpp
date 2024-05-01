@@ -40,6 +40,7 @@ int count = 0;
 int state = 0;
 bool stateSendData = false;
 int countSendData = 0;
+int swPumpPressed = 0;
 String Mymessage = "";
 
 unsigned long previousMillisSw = 0;
@@ -58,6 +59,7 @@ ICACHE_RAM_ATTR void handleInterruptMode() {
   // ตรวจสอบ debounce
   if ((millis() - lastDebounceTimeMode) > debounceDelayMode) {
     mode = !mode;
+    swPumpPressed = 1;
     // Serial.print("Modeeeeeeeeeeee ");
     // Serial.println(mode);
   }

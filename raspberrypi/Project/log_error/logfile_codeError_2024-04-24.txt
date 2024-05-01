@@ -1,0 +1,13 @@
+เริ่มต้นสร้างไฟล์ใหม่...
+
+Time2024-04-24 21:34:10.239491 error : _ssl.c:1106: The handshake operation timed out
+
+Time2024-04-24 21:34:36.163557 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-24 21:35:06.725030 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-24 21:35:18.483574 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-24 21:35:29.439594 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
+
+Time2024-04-24 21:37:02.872302 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)

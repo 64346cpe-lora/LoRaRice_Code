@@ -40,11 +40,13 @@ int count = 0;
 int state = 0;
 bool stateSendData = false;
 int countSendData = 0;
+int swPumpPressed = 0;
 String Mymessage = "";
-
+int counterled = 0;
 unsigned long previousMillisSw = 0;
 unsigned long previousMillisLed = 0;
 unsigned long buttonPressStartTime = 0;
+unsigned long previousMillisCounter= 0;
 volatile unsigned long lastDebounceTimeMode = 0; // เวลาล่าสุดที่ debounce
 volatile unsigned long debounceDelayMode = 200; // เวลา debounce (milliseconds)
 volatile unsigned long lastDebounceTimeSetZeRo = 0; // เวลาล่าสุดที่ debounce
@@ -54,10 +56,12 @@ void setMode(bool mode);
 bool updateConfig(String receiveData);
 void updateEEPROM();
 void setZero();
+int counter();
 ICACHE_RAM_ATTR void handleInterruptMode() {
   // ตรวจสอบ debounce
   if ((millis() - lastDebounceTimeMode) > debounceDelayMode) {
     mode = !mode;
+    swPumpPressed = 1;
     // Serial.print("Modeeeeeeeeeeee ");
     // Serial.println(mode);
   }
@@ -219,13 +223,27 @@ void loop() {
       state = FIVE;
     }else if(sendSuccess == false && resendData == true){
       if(countSendData >= 5){
-        statusNode = 0;
-        digitalWrite(LED_STATUS_R,!statusNode);
-        digitalWrite(LED_STATUS_G,statusNode);
-        gpio_hold_en(ledStatus_R_gpio);
-        gpio_hold_dis(ledStatus_G_gpio);
-        Serial.print("OFF LED_STATUS");
-        delay(10);
+        if(mode){
+          if (counter() == 1){
+            digitalWrite(LED_STATUS_R,!statusNode);
+            digitalWrite(LED_STATUS_G,statusNode);
+          }else if(counter() == 2){
+            digitalWrite(LED_STATUS_R,0);
+            digitalWrite(LED_STATUS_G,0);
+            gpio_hold_en(ledStatus_R_gpio);
+            gpio_hold_dis(ledStatus_G_gpio);
+            Serial.print("OFF LED_STATUS");
+            counterled = 0;  
+          }
+        }else{
+          statusNode = 0;
+          digitalWrite(LED_STATUS_R,!statusNode);
+          digitalWrite(LED_STATUS_G,statusNode);
+          gpio_hold_en(ledStatus_R_gpio);
+          gpio_hold_dis(ledStatus_G_gpio);
+          Serial.print("OFF LED_STATUS");
+          delay(10);
+        }
         state = SIX;
       }else{
         countSendData ++;
@@ -239,10 +257,23 @@ void loop() {
     // Serial.println(state);
     if(updateConfig(receiveData)){
       Serial.print("statusNode: ");  Serial.println(statusNode);
-      digitalWrite(LED_STATUS_R,!statusNode);
-      digitalWrite(LED_STATUS_G,statusNode);
-      gpio_hold_dis(ledStatus_R_gpio);
-      gpio_hold_en(ledStatus_G_gpio);
+      if(mode){
+        if (counter() == 1){
+          digitalWrite(LED_STATUS_R,!statusNode);
+          digitalWrite(LED_STATUS_G,statusNode);    
+        }else if(counter() == 2){
+          digitalWrite(LED_STATUS_R,0);
+          digitalWrite(LED_STATUS_G,0);
+          gpio_hold_dis(ledStatus_R_gpio);
+          gpio_hold_dis(ledStatus_G_gpio);
+          counterled = 0;  
+        }
+      }else{
+        digitalWrite(LED_STATUS_R,!statusNode);
+        digitalWrite(LED_STATUS_G,statusNode);
+        gpio_hold_dis(ledStatus_R_gpio);
+        gpio_hold_en(ledStatus_G_gpio);
+      }
       state = SIX;
     }else{
       state = THREE;
@@ -280,6 +311,14 @@ void setMode(bool mode){
     esp_sleep_enable_timer_wakeup(timeDebugMode * 60 * 1000000);  // ตื่นขึ้นทุก 1 นาที
     Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>DebugMode<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
   }
+}
+int counter(){
+  unsigned long currentMillisCounter = millis();
+  if (currentMillisCounter - previousMillisCounter >= 1000) {
+    previousMillisCounter = currentMillisCounter;
+    counterled++;
+  }
+  return counterled;
 }
 bool updateConfig(String receiveData){
   String data  = receiveData;

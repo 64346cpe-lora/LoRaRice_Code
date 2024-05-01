@@ -1,0 +1,13 @@
+เริ่มต้นสร้างไฟล์ใหม่...
+
+Time2024-05-01 09:35:46.145967 error : _ssl.c:1106: The handshake operation timed out
+
+Time2024-05-01 15:51:26.752507 error : [Errno -3] Temporary failure in name resolution
+
+Time2024-05-01 19:19:07.598428 error : timed out
+
+Time2024-05-01 19:25:26.499766 error : _ssl.c:1106: The handshake operation timed out
+
+Time2024-05-01 20:09:33.004440 error : timed out
+
+Time2024-05-01 20:09:38.711739 error : TLS/SSL connection has been closed (EOF) (_ssl.c:2472)
