@@ -16,7 +16,9 @@ extern const int resetPin = 6;       // LoRa radio reset
 extern const int irqPin = 1;         // change for your board; must be a hardware interrupt pin
 
 byte localAddress = 0xA1;     // address of this device
+String localAddressString = "0xa1";
 byte destination = 0xBB;      // destination to send to
+String destinationAddressString = "0xbb";
 extern bool sendSuccess = false;
 extern bool resendData = false;
 unsigned long previousMillis = 0;
@@ -81,7 +83,7 @@ void onReceive() {
               String recipient = "0x"+String(payloadArray[0].toInt(), HEX);          // recipient address
               String sender = "0x"+String(payloadArray[1].toInt(), HEX);            // sender address
               String incomingLength = payloadArray[2];    // incoming msg length
-              if(recipient == "0xa1" && sender == "0xbb"){
+              if(recipient == localAddressString && sender == destinationAddressString){
                 receiveData = rawPayload;
                 sendSuccess = true;
                 resendData = false;
@@ -110,13 +112,13 @@ void onReceive() {
         //     // break;
         // }
         }
-      if(swPumpPressed == 1){
-        swPumpPressed = 0;
-        sendSuccess = false;
-        resendData = true;
-        Serial.println("---------------------------------swPumpPressed-----------------------------------");
-        break;
-      }
+        if(swPumpPressed == 1){
+          swPumpPressed = 0;
+          sendSuccess = false;
+          resendData = true;
+          Serial.println("---------------------------------swPumpPressed-----------------------------------");
+          break;
+        }
     }
   
 }
